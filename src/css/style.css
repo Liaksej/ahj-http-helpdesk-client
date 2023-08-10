@@ -1,0 +1,150 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+th {
+  font-weight: normal;
+  padding-bottom: 10px;
+}
+
+.main_container {
+  max-width: 80%;
+  min-width: 300px;
+  margin: 0 auto;
+  margin-top: 60px;
+  border: 1px solid black;
+}
+
+.above_container {
+  position: relative;
+  top: -35px;
+  margin-bottom: -35px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.headding {
+  font-size: 20px;
+  margin: 0 0;
+  padding-left: 3px;
+  font-weight: normal;
+}
+
+.button_add {
+  border: none;
+  /*background-color: white;*/
+  border: 1px solid black;
+  border-radius: 8px;
+  font-size: 17px;
+  background-color: #f2f2f2;
+  font-weight: normal;
+  margin: 0;
+  padding: 3px;
+
+  cursor: pointer;
+}
+
+.popup_window,
+.popup_delete {
+  top: 35px;
+  left: calc(100% / 2 - 402px / 2);
+  width: 400px;
+  position: absolute;
+  display: none;
+  border: black 1px solid;
+  background-color: white;
+}
+
+.shown {
+  display: flex;
+}
+
+.form,
+.form-delete {
+  display: flex;
+  flex-flow: column;
+  width: calc(100% - 2px);
+  padding: 20px 25px;
+}
+
+.form input,
+form textarea {
+  font-size: 14px;
+  border: black 1px solid;
+  border-radius: 6px;
+}
+
+.form h2,
+.form-delete h2 {
+  font-size: 16px;
+  font-weight: normal;
+  margin: 10px 0 5px;
+}
+
+.form-delete {
+  text-align: center;
+}
+
+.form_buttons {
+  padding: 15px 0 0;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.form_buttons button {
+  width: 6.5rem;
+  height: 1.6rem;
+  border: black 1px solid;
+  border-radius: 15px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.table {
+  flex-direction: column;
+  width: 100%;
+  margin: 10px;
+  margin-top: 20px;
+}
+
+.table_row {
+  display: flex;
+  width: calc(100% - 20px);
+}
+
+.table_row td:first-child,
+.table_row th:first-child {
+  max-width: 80%;
+  text-align: left;
+  word-wrap: break-word;
+  flex-grow: 6;
+}
+
+.table_row td,
+.table_row th {
+  flex-grow: 1;
+  max-width: unset;
+}
+
+.form-error {
+  position: absolute;
+  padding: 5px 10px;
+  width: 200px;
+  background: #fff;
+  box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+/*.form-header {*/
+/*  display: flex;*/
+/*}*/
+
+.form-header h2 {
+  text-align: center;
+}
+
+.form textarea {
+  resize: none;
+  height: 4rem;
+}
