@@ -6,6 +6,8 @@ function app() {
   domAndEvents.onClickUpdateButton();
   domAndEvents.onClickRemoveButton();
   domAndEvents.onLoadPage();
+  domAndEvents.onClickRow();
+  domAndEvents.onClickStatus();
 }
 
 app();

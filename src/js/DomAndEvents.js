@@ -71,12 +71,13 @@ export class DomAndEvents {
               item.dataset.id = ticket.id;
 
               item.innerHTML = `
-          <td class="item">${ticket.name}</td>
-          <td class="price">${created}</td>
-          <td>
-            <button class="update">✎</button>
-            <button class="remove">X</button>
-          </td>`;
+                <td class="status">${ticket.status === true ? "✅" : "🟧"}</td>
+                <td class="item">${ticket.name}</td>
+                <td class="price">${created}</td>
+                <td>
+                  <button class="update">✎</button>
+                  <button class="remove">X</button>
+                </td>`;
 
               document.querySelector(".table").appendChild(item);
             }
@@ -99,7 +100,7 @@ export class DomAndEvents {
       });
   }
 
-  async onClickUpdateButton() {
+  onClickUpdateButton() {
     const updateButtonHandler = async (event) => {
       event.preventDefault();
       if (
@@ -119,7 +120,83 @@ export class DomAndEvents {
 
     document
       .querySelector(".table")
-      ?.addEventListener("click", await updateButtonHandler);
+      ?.addEventListener("click", updateButtonHandler);
+  }
+
+  onClickRow() {
+    const collapseRowHandler = async (event) => {
+      const classes = ["status", "update", "remove"];
+      if (classes.some((cls) => event.target.classList.contains(cls))) {
+        return;
+      }
+      const row = event.target.classList.contains(".table_row")
+        ? event.target
+        : event.target.closest(".table_row");
+
+      const description = row.querySelector(".description");
+      if (description) {
+        description.remove();
+
+        return;
+      }
+
+      const dataToInsert = await this._fetchFullTicket(row.dataset.id);
+
+      const details = document.createElement("div");
+      details.classList.add("description");
+      details.textContent = dataToInsert.description;
+      row.querySelector(".item").appendChild(details);
+    };
+
+    document
+      .querySelector(".table")
+      .addEventListener("click", collapseRowHandler);
+  }
+  onClickStatus() {
+    const clickStatusHandler = async (event) => {
+      if (!event.target.classList.contains("status")) {
+        return;
+      }
+      const row = event.target.closest(".table_row");
+
+      const status = event.target.textContent !== "✅";
+
+      const dataForUpdateStatus = {
+        status: status,
+      };
+
+      const urlForChangeStatus = new URL(this.url);
+      const params = { method: "changeStatus", id: row.dataset.id };
+      Object.keys(params).forEach((key) =>
+        urlForChangeStatus.searchParams.append(key, params[key]),
+      );
+
+      fetch(urlForChangeStatus, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataForUpdateStatus),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((ticketObj) => {
+          if (typeof ticketObj === "object" && ticketObj !== null) {
+            row.querySelector(".status").textContent =
+              ticketObj.status === true ? "✅" : "🟧";
+          }
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+        });
+    };
+
+    document
+      .querySelector(".table")
+      .addEventListener("click", clickStatusHandler);
   }
 
   onClickRemoveButton() {
@@ -177,7 +254,7 @@ export class DomAndEvents {
       const ticketData = {
         name: event.target["item"].value,
         description: event.target.price.value,
-        status: true,
+        status: false,
       };
 
       const urlForCreate = new URL(this.url);
@@ -206,12 +283,13 @@ export class DomAndEvents {
             item.dataset.id = ticketObj.id;
 
             item.innerHTML = `
-          <td class="item">${ticketObj.name}</td>
-          <td class="price">${this._dateConverter(ticketObj.created)}</td>
-          <td>
-            <button class="update">✎</button>
-            <button class="remove">X</button>
-          </td>`;
+              <td class="status">${ticketObj.status === true ? "✅" : "🟧"}</td>
+              <td class="item"><div>${ticketObj.name}</div></td>
+              <td class="price">${this._dateConverter(ticketObj.created)}</td>
+              <td>
+                <button class="update">✎</button>
+                <button class="remove">X</button>
+              </td>`;
 
             document.querySelector(".table").appendChild(item);
           }

@@ -12,7 +12,7 @@ th {
   min-width: 300px;
   margin: 0 auto;
   margin-top: 60px;
-  border: 1px solid black;
+  /*border: 1px solid black;*/
 }
 
 .above_container {
@@ -103,19 +103,19 @@ form textarea {
 
 .table {
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 20px);
   margin: 10px;
   margin-top: 20px;
+  border-collapse: collapse;
 }
 
 .table_row {
-  display: flex;
-  width: calc(100% - 20px);
+  border: 1px solid black;
 }
 
-.table_row td:first-child,
-.table_row th:first-child {
-  max-width: 60%;
+.table_row td:nth-child(2),
+.table_row th:nth-child(2) {
+  width: 60%;
   text-align: left;
   word-wrap: break-word;
   flex-grow: 6;
@@ -126,6 +126,11 @@ form textarea {
   flex-grow: 1;
   text-align: right;
   max-width: unset;
+  padding: 10px;
+}
+
+.table_row td:first-child {
+  text-align: left;
 }
 
 .form-error {
@@ -137,10 +142,6 @@ form textarea {
   z-index: 999;
 }
 
-/*.form-header {*/
-/*  display: flex;*/
-/*}*/
-
 .form-header h2 {
   text-align: center;
 }
@@ -148,4 +149,15 @@ form textarea {
 .form textarea {
   resize: none;
   height: 4rem;
+}
+
+.description {
+  padding-top: 30px;
+}
+
+.status,
+.update,
+.remove,
+.item {
+  cursor: pointer;
 }
