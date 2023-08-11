@@ -273,7 +273,35 @@ export class DomAndEvents {
       event.preventDefault();
 
       if (itemForDelete) {
-        this.crud.remove(Number(itemForDelete.dataset.id));
+        // this.crud.remove(Number(itemForDelete.dataset.id));
+        const ticketDataForDelete = {
+          id: itemForDelete.dataset.id,
+        };
+
+        const urlForDeleteTicketFull = new URL(this.url);
+        const params = {
+          method: "deleteTicketById",
+          id: itemForDelete.dataset.id,
+        };
+        Object.keys(params).forEach((key) =>
+          urlForDeleteTicketFull.searchParams.append(key, params[key]),
+        );
+
+        fetch(urlForDeleteTicketFull, {
+          method: "DELETE",
+          mode: "cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(ticketDataForDelete),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+          })
+          .catch((error) => {
+            console.log("Error:", error);
+          });
+
         itemForDelete.remove();
       }
 
