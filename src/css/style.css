@@ -115,7 +115,7 @@ form textarea {
 
 .table_row td:first-child,
 .table_row th:first-child {
-  max-width: 80%;
+  max-width: 60%;
   text-align: left;
   word-wrap: break-word;
   flex-grow: 6;
@@ -124,6 +124,7 @@ form textarea {
 .table_row td,
 .table_row th {
   flex-grow: 1;
+  text-align: right;
   max-width: unset;
 }
 

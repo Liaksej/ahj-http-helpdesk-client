@@ -8,17 +8,55 @@ export class DomAndEvents {
     this.tooltip = new Tooltip();
     this.vault = vault;
     this.actualMessages = [];
+    this.url = new URL("http://localhost:8081");
+  }
+
+  async _fetchFullTicket(id) {
+    const urlForGetTicketFull = new URL(this.url);
+    const params = { method: "ticketById", id: id };
+    Object.keys(params).forEach((key) =>
+      urlForGetTicketFull.searchParams.append(key, params[key]),
+    );
+
+    return await fetch(urlForGetTicketFull)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((ticketFull) => {
+        if (typeof ticketFull === "object" && ticketFull !== null) {
+          return ticketFull;
+        }
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      });
+  }
+
+  _dateConverter(created) {
+    const date = new Date(created);
+
+    const formatter = new Intl.DateTimeFormat("ru", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return formatter.format(date);
   }
 
   onLoadPage() {
     document.addEventListener("DOMContentLoaded", () => {
-      const url = new URL("http://localhost:8081");
+      const urlForDownload = new URL(this.url);
       const params = { method: "allTickets" };
       Object.keys(params).forEach((key) =>
-        url.searchParams.append(key, params[key]),
+        urlForDownload.searchParams.append(key, params[key]),
       );
 
-      fetch(url)
+      fetch(urlForDownload)
         .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -31,22 +69,14 @@ export class DomAndEvents {
             for (const ticket of listOfTickets) {
               const item = document.createElement("tr");
 
-              const date = new Date(ticket.created);
-
-              const formatter = new Intl.DateTimeFormat("ru", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              const created = this._dateConverter(ticket.created);
 
               item.classList.add("table_row");
               item.dataset.id = ticket.id;
 
               item.innerHTML = `
           <td class="item">${ticket.name}</td>
-          <td class="price">${formatter.format(date)}</td>
+          <td class="price">${created}</td>
           <td>
             <button class="update">✎</button>
             <button class="remove">X</button>
@@ -73,24 +103,27 @@ export class DomAndEvents {
       });
   }
 
-  onClickUpdateButton() {
-    const updateButtonHandler = (event) => {
+  async onClickUpdateButton() {
+    const updateButtonHandler = async (event) => {
       event.preventDefault();
       if (
         event.target.classList.contains("update") &&
         event.target.closest(".table_row").dataset.id
       ) {
-        const target_item = this.vault.find(
-          (item) =>
-            item.id === Number(event.target.closest(".table_row").dataset.id),
+        const targetItem = await this._fetchFullTicket(
+          event.target.closest(".table_row").dataset.id,
         );
-        this.popupCreator(target_item.id, target_item.name, target_item.price);
+        this.popupCreator(
+          event.target.closest(".table_row").dataset.id,
+          targetItem.name,
+          targetItem.description,
+        );
       }
     };
 
     document
       .querySelector(".table")
-      ?.addEventListener("click", updateButtonHandler);
+      ?.addEventListener("click", await updateButtonHandler);
   }
 
   onClickRemoveButton() {
@@ -111,38 +144,85 @@ export class DomAndEvents {
 
   popupOnSubmit(event, id = null) {
     if (id) {
-      this.crud.update(
-        id,
-        event.target["item"].value,
-        event.target.price.value,
+      const ticketDataForUpdate = {
+        id: id,
+        name: event.target["item"].value,
+        description: event.target.price.value,
+      };
+
+      const urlForUpdate = new URL(this.url);
+      const params = { method: "editTicket", id: id };
+      Object.keys(params).forEach((key) =>
+        urlForUpdate.searchParams.append(key, params[key]),
       );
 
-      const rowForChange = Array.from(
-        document.querySelectorAll("tr[data-id]"),
-      ).find((item) => Number(item.dataset.id) === id);
-
-      rowForChange.querySelector(".item").textContent =
-        event.target["item"].value;
-
-      rowForChange.querySelector(".price").textContent =
-        event.target.price.value;
+      fetch(urlForUpdate, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ticketDataForUpdate),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((ticketObj) => {
+          if (typeof ticketObj === "object" && ticketObj !== null) {
+            const item = document.querySelector(`[data-id="${id}"]`);
+            item.querySelector(".item").textContent = ticketObj.name;
+          }
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+        });
     } else {
-      this.crud.create(event.target["item"].value, event.target.price.value);
+      const ticketData = {
+        name: event.target["item"].value,
+        description: event.target.price.value,
+        status: true,
+      };
 
-      const item = document.createElement("tr");
+      const urlForCreate = new URL(this.url);
+      const params = { method: "createTicket" };
+      Object.keys(params).forEach((key) =>
+        urlForCreate.searchParams.append(key, params[key]),
+      );
 
-      item.classList.add("table_row");
-      item.dataset.id = String(this.vault.at(-1).id);
+      fetch(urlForCreate, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ticketData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((ticketObj) => {
+          if (typeof ticketObj === "object" && ticketObj !== null) {
+            const item = document.createElement("tr");
 
-      item.innerHTML = `
-          <td class="item">${event.target["item"].value}</td>
-          <td class="price">${event.target.price.value}</td>
+            item.classList.add("table_row");
+            item.dataset.id = ticketObj.id;
+
+            item.innerHTML = `
+          <td class="item">${ticketObj.name}</td>
+          <td class="price">${this._dateConverter(ticketObj.created)}</td>
           <td>
             <button class="update">✎</button>
             <button class="remove">X</button>
           </td>`;
 
-      document.querySelector(".table").appendChild(item);
+            document.querySelector(".table").appendChild(item);
+          }
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+        });
     }
     event.target["item"].value = "";
     event.target.price.value = "";
@@ -176,8 +256,8 @@ export class DomAndEvents {
     if (document.querySelector(".popup_window")?.classList.contains("shown")) {
       document.querySelector("input[name='item']").focus();
       if (id) {
-        popupWindow.querySelector("input[name='item']").value = name;
-        popupWindow.querySelector("textarea[name='price']").value = price;
+        document.querySelector("input[name='item']").value = name;
+        document.querySelector("textarea[name='price']").value = price;
         this.tooltipLogic(id);
       } else {
         this.tooltipLogic();
