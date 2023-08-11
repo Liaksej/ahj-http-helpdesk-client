@@ -1,12 +1,8 @@
-import { Crud } from "./Crud";
-import { vault } from "./ItemAndVault";
 import { Tooltip } from "./tooltipFabric";
 
 export class DomAndEvents {
   constructor() {
-    this.crud = new Crud();
     this.tooltip = new Tooltip();
-    this.vault = vault;
     this.actualMessages = [];
     this.url = new URL("http://localhost:8081");
   }
@@ -242,7 +238,7 @@ export class DomAndEvents {
         <h2>Краткое описание</h2>
         <input type="text" name="item" required>
         <h2>Подробное описание</h2>
-        <textarea type="text" name="price" required></textarea>
+        <textarea name="price" required></textarea>
         <div class="form_buttons">
           <button class="cancel-bnt" type="button">Отмена</button>
           <button class="submit-btn" type="submit">Ok</button>
@@ -255,11 +251,15 @@ export class DomAndEvents {
 
     if (document.querySelector(".popup_window")?.classList.contains("shown")) {
       document.querySelector("input[name='item']").focus();
+      const formHeader = document.querySelector(".form-header");
       if (id) {
         document.querySelector("input[name='item']").value = name;
         document.querySelector("textarea[name='price']").value = price;
+        formHeader.textContent = "Изменить тикет";
         this.tooltipLogic(id);
       } else {
+        formHeader.textContent === "Изменить тикет" &&
+          (formHeader.textContent = "Добавить тикет");
         this.tooltipLogic();
       }
     }
@@ -273,7 +273,6 @@ export class DomAndEvents {
       event.preventDefault();
 
       if (itemForDelete) {
-        // this.crud.remove(Number(itemForDelete.dataset.id));
         const ticketDataForDelete = {
           id: itemForDelete.dataset.id,
         };
