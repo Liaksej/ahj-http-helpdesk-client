@@ -44,33 +44,41 @@ export class DomAndEvents {
     return formatter.format(date);
   }
 
-  onLoadPage() {
-    document.addEventListener("DOMContentLoaded", () => {
-      const urlForDownload = new URL(this.url);
-      const params = { method: "allTickets" };
-      Object.keys(params).forEach((key) =>
-        urlForDownload.searchParams.append(key, params[key]),
-      );
+  _showLoadingAnimation() {
+    document.querySelector(".loading-animation").classList.remove("hidden");
+  }
 
-      fetch(urlForDownload)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((listOfTickets) => {
-          if (Array.isArray(listOfTickets)) {
-            document.querySelector(".table");
-            for (const ticket of listOfTickets) {
-              const item = document.createElement("tr");
+  _hideLoadingAnimation() {
+    document.querySelector(".loading-animation").classList.add("hidden");
+  }
 
-              const created = this._dateConverter(ticket.created);
+  _getListener() {
+    document.querySelector(".table").innerHTML = "";
+    const urlForDownload = new URL(this.url);
+    const params = { method: "allTickets" };
+    Object.keys(params).forEach((key) =>
+      urlForDownload.searchParams.append(key, params[key]),
+    );
+    this._showLoadingAnimation();
+    fetch(urlForDownload)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((listOfTickets) => {
+        if (Array.isArray(listOfTickets)) {
+          document.querySelector(".table");
+          for (const ticket of listOfTickets) {
+            const item = document.createElement("tr");
 
-              item.classList.add("table_row");
-              item.dataset.id = ticket.id;
+            const created = this._dateConverter(ticket.created);
 
-              item.innerHTML = `
+            item.classList.add("table_row");
+            item.dataset.id = ticket.id;
+
+            item.innerHTML = `
                 <td class="status">${ticket.status === true ? "✅" : "🟧"}</td>
                 <td class="item">${ticket.name}</td>
                 <td class="price">${created}</td>
@@ -79,13 +87,19 @@ export class DomAndEvents {
                   <button class="remove">X</button>
                 </td>`;
 
-              document.querySelector(".table").appendChild(item);
-            }
+            document.querySelector(".table").appendChild(item);
           }
-        })
-        .catch((error) => {
-          console.log("Error:", error);
-        });
+        }
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      })
+      .finally(this._hideLoadingAnimation);
+  }
+
+  onLoadPage() {
+    document.addEventListener("DOMContentLoaded", () => {
+      this._getListener();
     });
   }
 
@@ -243,8 +257,7 @@ export class DomAndEvents {
         })
         .then((ticketObj) => {
           if (typeof ticketObj === "object" && ticketObj !== null) {
-            const item = document.querySelector(`[data-id="${id}"]`);
-            item.querySelector(".item").textContent = ticketObj.name;
+            this._getListener();
           }
         })
         .catch((error) => {
@@ -277,21 +290,7 @@ export class DomAndEvents {
         })
         .then((ticketObj) => {
           if (typeof ticketObj === "object" && ticketObj !== null) {
-            const item = document.createElement("tr");
-
-            item.classList.add("table_row");
-            item.dataset.id = ticketObj.id;
-
-            item.innerHTML = `
-              <td class="status">${ticketObj.status === true ? "✅" : "🟧"}</td>
-              <td class="item"><div>${ticketObj.name}</div></td>
-              <td class="price">${this._dateConverter(ticketObj.created)}</td>
-              <td>
-                <button class="update">✎</button>
-                <button class="remove">X</button>
-              </td>`;
-
-            document.querySelector(".table").appendChild(item);
+            this._getListener();
           }
         })
         .catch((error) => {
@@ -374,12 +373,11 @@ export class DomAndEvents {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
+            this._getListener();
           })
           .catch((error) => {
             console.log("Error:", error);
           });
-
-        itemForDelete.remove();
       }
 
       this.deletePopup();
@@ -436,7 +434,7 @@ export class DomAndEvents {
         valueMissing: "Нам потребуется название...",
       },
       price: {
-        valueMissing: "Нам потребуется стоимость...",
+        valueMissing: "Нам потребуется подробное описание тикета...",
       },
     };
 

@@ -10,8 +10,7 @@ th {
 .main_container {
   max-width: 80%;
   min-width: 300px;
-  margin: 0 auto;
-  margin-top: 60px;
+  margin: 60px auto 0;
   /*border: 1px solid black;*/
 }
 
@@ -31,8 +30,6 @@ th {
 }
 
 .button_add {
-  border: none;
-  /*background-color: white;*/
   border: 1px solid black;
   border-radius: 8px;
   font-size: 17px;
@@ -104,8 +101,7 @@ form textarea {
 .table {
   flex-direction: column;
   width: calc(100% - 20px);
-  margin: 10px;
-  margin-top: 20px;
+  margin: 20px 10px 10px;
   border-collapse: collapse;
 }
 
@@ -160,4 +156,21 @@ form textarea {
 .remove,
 .item {
   cursor: pointer;
+}
+
+.loading-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 10000;
+}
+
+.hidden {
+  display: none;
+}
+
+.form-header {
+  text-align: center;
 }
