@@ -52,33 +52,19 @@ export class DomAndEvents {
     document.querySelector(".loading-animation").classList.add("hidden");
   }
 
-  _getListener() {
-    document.querySelector(".table").innerHTML = "";
-    const urlForDownload = new URL(this.url);
-    const params = { method: "allTickets" };
-    Object.keys(params).forEach((key) =>
-      urlForDownload.searchParams.append(key, params[key]),
-    );
-    this._showLoadingAnimation();
-    fetch(urlForDownload)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((listOfTickets) => {
-        if (Array.isArray(listOfTickets)) {
-          document.querySelector(".table");
-          for (const ticket of listOfTickets) {
-            const item = document.createElement("tr");
+  _createTicketsList(listOfTickets) {
+    if (Array.isArray(listOfTickets)) {
+      const table = document.querySelector(".table");
+      table.innerHTML = "";
+      for (const ticket of listOfTickets) {
+        const item = document.createElement("tr");
 
-            const created = this._dateConverter(ticket.created);
+        const created = this._dateConverter(ticket.created);
 
-            item.classList.add("table_row");
-            item.dataset.id = ticket.id;
+        item.classList.add("table_row");
+        item.dataset.id = ticket.id;
 
-            item.innerHTML = `
+        item.innerHTML = `
                 <td class="status">${ticket.status === true ? "✅" : "🟧"}</td>
                 <td class="item">${ticket.name}</td>
                 <td class="price">${created}</td>
@@ -87,19 +73,33 @@ export class DomAndEvents {
                   <button class="remove">X</button>
                 </td>`;
 
-            document.querySelector(".table").appendChild(item);
-          }
-        }
-      })
-      .catch((error) => {
-        console.log("Error:", error);
-      })
-      .finally(this._hideLoadingAnimation);
+        table.appendChild(item);
+      }
+    }
   }
 
   onLoadPage() {
     document.addEventListener("DOMContentLoaded", () => {
-      this._getListener();
+      const urlForDownload = new URL(this.url);
+      const params = { method: "allTickets" };
+      Object.keys(params).forEach((key) =>
+        urlForDownload.searchParams.append(key, params[key]),
+      );
+      this._showLoadingAnimation();
+      fetch(urlForDownload)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((listOfTickets) => {
+          this._createTicketsList(listOfTickets);
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+        })
+        .finally(this._hideLoadingAnimation);
     });
   }
 
@@ -197,10 +197,9 @@ export class DomAndEvents {
           }
           return response.json();
         })
-        .then((ticketObj) => {
-          if (typeof ticketObj === "object" && ticketObj !== null) {
-            row.querySelector(".status").textContent =
-              ticketObj.status === true ? "✅" : "🟧";
+        .then((ticketsList) => {
+          if (Array.isArray(ticketsList)) {
+            this._createTicketsList(ticketsList);
           }
         })
         .catch((error) => {
@@ -255,9 +254,9 @@ export class DomAndEvents {
           }
           return response.json();
         })
-        .then((ticketObj) => {
-          if (typeof ticketObj === "object" && ticketObj !== null) {
-            this._getListener();
+        .then((ticketsList) => {
+          if (Array.isArray(ticketsList)) {
+            this._createTicketsList(ticketsList);
           }
         })
         .catch((error) => {
@@ -288,9 +287,9 @@ export class DomAndEvents {
           }
           return response.json();
         })
-        .then((ticketObj) => {
-          if (typeof ticketObj === "object" && ticketObj !== null) {
-            this._getListener();
+        .then((ticketsList) => {
+          if (Array.isArray(ticketsList)) {
+            this._createTicketsList(ticketsList);
           }
         })
         .catch((error) => {
@@ -373,7 +372,12 @@ export class DomAndEvents {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
-            this._getListener();
+            return response.json();
+          })
+          .then((ticketsList) => {
+            if (Array.isArray(ticketsList)) {
+              this._createTicketsList(ticketsList);
+            }
           })
           .catch((error) => {
             console.log("Error:", error);
