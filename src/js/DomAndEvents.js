@@ -197,9 +197,10 @@ export class DomAndEvents {
           }
           return response.json();
         })
-        .then((ticketsList) => {
-          if (Array.isArray(ticketsList)) {
-            this._createTicketsList(ticketsList);
+        .then((ticketObj) => {
+          if (typeof ticketObj === "object" && ticketObj !== null) {
+            row.querySelector(".status").textContent =
+              ticketObj.status === true ? "✅" : "🟧";
           }
         })
         .catch((error) => {
